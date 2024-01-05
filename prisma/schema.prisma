@@ -33,13 +33,18 @@ model PhotoTag {
 
 
 model Photo {
-  photo_id   Int      @id @default(autoincrement())
-  url        String
-  createdAt  DateTime @default(now())
+  photo_id      Int      @id @default(autoincrement())
+  title         String   @unique
+  description   String?
+  url           String
+  createdAt     DateTime @default(now())
+  userId        Int
 
   tags       Tag[]
   likes      UserLike[]
   photoTags  PhotoTag[]
+  user       User @relation(fields: [userId], references: [id])
+
 }
 
 
@@ -47,17 +52,18 @@ model UserLike {
   user_id  Int
   photo_id Int
 
-  user  User  @relation(fields: [user_id], references: [user_id])
+  user  User  @relation(fields: [user_id], references: [id])
   photo Photo @relation(fields: [photo_id], references: [photo_id])
 
   @@id([user_id, photo_id])
 }
 
 model User {
-  user_id   Int       @id @default(autoincrement())
+  id   Int       @id @default(autoincrement())
   email     String    @unique
-   hash     String
+  hash     String
   createdAt DateTime  @default(now())
 
   likes UserLike[]
+  photo Photo[]
 }

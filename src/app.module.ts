@@ -3,14 +3,12 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { PhotoController } from './photo/photo.controller';
-import { PhotoService } from './photo/photo.service';
+import { PhotoModule } from './photo/photo.module';
+import { TagModule } from './tag/tag.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal: true,
-  }),UserModule, PrismaModule, AuthModule],
-  controllers: [PhotoController],
-  providers: [PhotoService],
+  }),UserModule, PrismaModule, AuthModule, PhotoModule, TagModule ],
 })
 export class AppModule {}
