@@ -8,6 +8,8 @@ import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Role } from '@prisma/client';
+
   
   @Injectable()
   export class AuthService {
@@ -24,10 +26,11 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
           data: {
             email: dto.email,
             hash,
+            role: Role.USER
           },
         });
   
-        return this.signToken(user.id, user.email);
+        return this.signToken(user.id, user.email, user.role);
       } catch (error) {
         if (
           error instanceof
@@ -63,16 +66,18 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
         throw new ForbiddenException(
           'Credentials incorrect',
         );
-      return this.signToken(user.id, user.email);
+      return this.signToken(user.id, user.email, user.role);
     }
   
     async signToken(
       userId: number,
       email: string,
+      role: Role,
     ): Promise<{ access_token: string }> {
       const payload = {
         sub: userId,
         email,
+        role,
       };
       const secret = this.config.get('JWT_SECRET');
   

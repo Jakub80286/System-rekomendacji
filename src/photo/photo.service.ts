@@ -87,19 +87,6 @@ export class PhotoService {
             });
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
 

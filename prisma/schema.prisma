@@ -15,7 +15,9 @@ model Tag {
   tag_id     Int      @id @default(autoincrement())
   tag_name   String
   createdAt  DateTime @default(now())
+  userId     Int
 
+  user       User @relation(fields: [userId], references: [id])
   photos     Photo[]  
   photoTags  PhotoTag[]
 }
@@ -59,11 +61,18 @@ model UserLike {
 }
 
 model User {
-  id   Int       @id @default(autoincrement())
+  id   Int          @id @default(autoincrement())
   email     String    @unique
   hash     String
   createdAt DateTime  @default(now())
+  role      Role   @default(USER)
 
   likes UserLike[]
   photo Photo[]
+  tag Tag[]
+}
+
+enum Role {
+  USER
+  ADMIN
 }
