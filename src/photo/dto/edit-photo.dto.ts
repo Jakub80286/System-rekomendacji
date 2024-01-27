@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from "class-validator"
+import { ArrayMinSize, IsInt, IsOptional, IsString } from "class-validator"
 
 export class EditPhotoDto{
 
@@ -13,5 +13,9 @@ export class EditPhotoDto{
     @IsString()
     @IsOptional()
     url?: string
- 
+
+    @IsOptional()
+    @IsInt({ each: true})
+    @ArrayMinSize(1)
+    tagIds?: number[] ;
 }

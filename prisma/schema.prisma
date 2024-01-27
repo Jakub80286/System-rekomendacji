@@ -13,12 +13,11 @@ datasource db {
 
 model Tag {
   tag_id     Int      @id @default(autoincrement())
-  tag_name   String
+  tag_name   String   @unique
   createdAt  DateTime @default(now())
   userId     Int
 
   user       User @relation(fields: [userId], references: [id])
-  photos     Photo[]  
   photoTags  PhotoTag[]
 }
 
@@ -42,7 +41,6 @@ model Photo {
   createdAt     DateTime @default(now())
   userId        Int
 
-  tags       Tag[]
   likes      UserLike[]
   photoTags  PhotoTag[]
   user       User @relation(fields: [userId], references: [id])
