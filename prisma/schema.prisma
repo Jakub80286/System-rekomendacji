@@ -74,3 +74,40 @@ enum Role {
   USER
   ADMIN
 }
+
+model Song {
+  id                String    @id
+  name              String?
+  acousticness      Float  
+  danceability      Float
+  duration_ms       Int
+  energy            Float
+  instrumentalness  Float
+  key               Int
+  liveness          Float
+  loudness          Float
+  mode              Int
+  speechiness       Float
+  tempo             Float
+  time_signature    Int
+  valence           Float
+  popularity        Float?
+  songArtists       SongArtist[]
+}
+
+model Artist {
+  id                String @id
+  name              String
+  popularity        Float
+  genres            String[]
+  followers         Float
+  songArtists       SongArtist[]
+}
+
+model SongArtist {
+  artist_id         String
+  song_id           String
+  artist            Artist @relation(fields: [artist_id], references: [id])
+  song              Song @relation(fields: [song_id], references: [id])
+  @@id([artist_id, song_id])
+}

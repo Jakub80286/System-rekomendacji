@@ -218,8 +218,6 @@ export class PhotoService {
             return newLike;
         }
 
-
-
-
+        
 
     }
