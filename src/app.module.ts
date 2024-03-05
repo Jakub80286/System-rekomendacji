@@ -6,6 +6,9 @@ import { ConfigModule } from '@nestjs/config';
 import { PhotoModule } from './photo/photo.module';
 import { TagModule } from './tag/tag.module';
 import { MusicModule } from './music/music.module';
+import { CacheModule } from '@nestjs/cache-manager';
+
+
 
 
 
@@ -13,7 +16,8 @@ import { MusicModule } from './music/music.module';
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal: true, 
-  }),UserModule, PrismaModule, AuthModule, PhotoModule, TagModule, MusicModule],
+  }),UserModule, PrismaModule, AuthModule, PhotoModule, TagModule, MusicModule, ],
+ 
 })
 export class AppModule{}
 

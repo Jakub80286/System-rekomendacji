@@ -41,22 +41,13 @@ model Photo {
   createdAt     DateTime @default(now())
   userId        Int
 
-  likes      UserLike[]
+
   photoTags  PhotoTag[]
   user       User @relation(fields: [userId], references: [id])
-
+ likes      Like[]
 }
 
 
-model UserLike {
-  user_id  Int
-  photo_id Int
-
-  user  User  @relation(fields: [user_id], references: [id])
-  photo Photo @relation(fields: [photo_id], references: [photo_id])
-
-  @@id([user_id, photo_id])
-}
 
 model User {
   id   Int          @id @default(autoincrement())
@@ -65,7 +56,7 @@ model User {
   createdAt DateTime  @default(now())
   role      Role   @default(USER)
 
-  likes UserLike[]
+ likes      Like[]
   photo Photo[]
   tag Tag[]
 }
@@ -93,6 +84,7 @@ model Song {
   valence           Float
   popularity        Float?
   songArtists       SongArtist[]
+  likes             Like[]
 }
 
 model Artist {
@@ -110,4 +102,16 @@ model SongArtist {
   artist            Artist @relation(fields: [artist_id], references: [id])
   song              Song @relation(fields: [song_id], references: [id])
   @@id([artist_id, song_id])
+}
+
+model Like {
+  like_id           Int      @id @default(autoincrement())
+  user_id           Int
+  song_id           String?
+  photo_id          Int?
+  createdAt         DateTime @default(now())
+
+  user              User @relation(fields: [user_id], references: [id])
+  song              Song? @relation(fields: [song_id], references: [id])
+  photo              Photo? @relation(fields: [photo_id], references: [photo_id])
 }
