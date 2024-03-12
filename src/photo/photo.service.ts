@@ -7,10 +7,16 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePhotoDto } from './dto/create-photo.dto';
 import { EditPhotoDto } from './dto';
+import { VisionService } from './vision.service';
+import axios from 'axios';
+import imageSize from 'image-size';
 
 @Injectable()
 export class PhotoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private visionService: VisionService,
+  ) {}
 
   getPhotos(userId: number) {
     return this.prisma.photo.findMany({
@@ -69,12 +75,15 @@ export class PhotoService {
     if (existingTags.length !== dto.tagIds.length) {
       throw new BadRequestException('Niektóre z podanych tagów nie istnieją');
     }
+    const { width, height } = await this.getImageSize(dto.url);
 
     const newPhoto = await this.prisma.photo.create({
       data: {
         title: dto.title,
         description: dto.description,
         url: dto.url,
+        width,
+        height,
         userId,
         photoTags: {
           create: dto.tagIds.map((tagId) => ({
@@ -86,6 +95,43 @@ export class PhotoService {
       },
     });
 
+    const analysisResults = await this.visionService.analyzeImage(dto.url);
+    for (const label of analysisResults.labels) {
+      let labelImg = await this.prisma.label.findUnique({
+        where: { name: label },
+      });
+
+      if (!labelImg) {
+        labelImg = await this.prisma.label.create({
+          data: { name: label },
+        });
+      }
+      await this.prisma.feature.create({
+        data: {
+          photo_id: newPhoto.photo_id,
+          labelId: labelImg.id,
+          red: 0,
+          green: 0,
+          blue: 0,
+          score: 0,
+          pixelFraction: 0,
+        },
+      });
+    }
+    const colorsData = analysisResults.colors.map((color) => ({
+      photo_id: newPhoto.photo_id,
+      red: color.color.red,
+      green: color.color.green,
+      blue: color.color.blue,
+      score: color.score,
+      pixelFraction: color.pixelFraction,
+    }));
+
+    if (colorsData.length > 0) {
+      await this.prisma.feature.createMany({
+        data: colorsData,
+      });
+    }
     return newPhoto;
   }
 
@@ -201,5 +247,18 @@ export class PhotoService {
     });
 
     return newLike;
+  }
+
+  async getImageSize(
+    imageUrl: string,
+  ): Promise<{ width: number; height: number }> {
+    const response = await axios({
+      url: imageUrl,
+      responseType: 'arraybuffer',
+    });
+
+    const sizeImg = imageSize(response.data);
+
+    return { width: sizeImg.width, height: sizeImg.height };
   }
 }

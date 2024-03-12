@@ -10,55 +10,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Tag {
-  tag_id     Int      @id @default(autoincrement())
-  tag_name   String   @unique
-  createdAt  DateTime @default(now())
-  userId     Int
+  tag_id    Int      @id @default(autoincrement())
+  tag_name  String   @unique
+  createdAt DateTime @default(now())
+  userId    Int
 
-  user       User @relation(fields: [userId], references: [id])
-  photoTags  PhotoTag[]
+  user      User       @relation(fields: [userId], references: [id])
+  photoTags PhotoTag[]
 }
-
 
 model PhotoTag {
   photo_id Int
   tag_id   Int
 
-  photo    Photo @relation(fields: [photo_id], references: [photo_id])
-  tag      Tag   @relation(fields: [tag_id], references: [tag_id])
+  photo Photo @relation(fields: [photo_id], references: [photo_id])
+  tag   Tag   @relation(fields: [tag_id], references: [tag_id])
 
   @@id([photo_id, tag_id])
 }
 
-
 model Photo {
-  photo_id      Int      @id @default(autoincrement())
-  title         String   @unique
-  description   String?
-  url           String
-  createdAt     DateTime @default(now())
-  userId        Int
+  photo_id    Int      @id @default(autoincrement())
+  title       String   @unique
+  description String?
+  url         String
+  createdAt   DateTime @default(now())
+  userId      Int
+  width       Int?
+  height      Int?
 
-
-  photoTags  PhotoTag[]
-  user       User @relation(fields: [userId], references: [id])
- likes      Like[]
+  photoTags PhotoTag[]
+  user      User       @relation(fields: [userId], references: [id])
+  likes     Like[]
+  features  Feature[]
 }
 
+model Feature {
+  feature_id    Int    @id @default(autoincrement())
+  photo_id      Int
+  red           Int?
+  green         Int?
+  blue          Int?
+  score         Float?
+  pixelFraction Float?
+  labelId       Int?
 
+  label Label? @relation(fields: [labelId], references: [id])
+  photo Photo  @relation(fields: [photo_id], references: [photo_id])
+
+  @@index([photo_id])
+}
+
+model Label {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  features Feature[]
+}
 
 model User {
-  id   Int          @id @default(autoincrement())
-  email     String    @unique
-  hash     String
-  createdAt DateTime  @default(now())
-  role      Role   @default(USER)
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  hash      String
+  createdAt DateTime @default(now())
+  role      Role     @default(USER)
 
- likes      Like[]
+  likes Like[]
   photo Photo[]
-  tag Tag[]
+  tag   Tag[]
 }
 
 enum Role {
@@ -67,51 +86,52 @@ enum Role {
 }
 
 model Song {
-  id                String    @id
-  name              String?
-  acousticness      Float  
-  danceability      Float
-  duration_ms       Int
-  energy            Float
-  instrumentalness  Float
-  key               Int
-  liveness          Float
-  loudness          Float
-  mode              Int
-  speechiness       Float
-  tempo             Float
-  time_signature    Int
-  valence           Float
-  popularity        Float?
-  songArtists       SongArtist[]
-  likes             Like[]
+  id               String       @id
+  name             String?
+  acousticness     Float
+  danceability     Float
+  duration_ms      Int
+  energy           Float
+  instrumentalness Float
+  key              Int
+  liveness         Float
+  loudness         Float
+  mode             Int
+  speechiness      Float
+  tempo            Float
+  time_signature   Int
+  valence          Float
+  popularity       Float?
+  songArtists      SongArtist[]
+  likes            Like[]
 }
 
 model Artist {
-  id                String @id
-  name              String
-  popularity        Float
-  genres            String[]
-  followers         Float
-  songArtists       SongArtist[]
+  id          String       @id
+  name        String
+  popularity  Float
+  genres      String[]
+  followers   Float
+  songArtists SongArtist[]
 }
 
 model SongArtist {
-  artist_id         String
-  song_id           String
-  artist            Artist @relation(fields: [artist_id], references: [id])
-  song              Song @relation(fields: [song_id], references: [id])
+  artist_id String
+  song_id   String
+  artist    Artist @relation(fields: [artist_id], references: [id])
+  song      Song   @relation(fields: [song_id], references: [id])
+
   @@id([artist_id, song_id])
 }
 
 model Like {
-  like_id           Int      @id @default(autoincrement())
-  user_id           Int
-  song_id           String?
-  photo_id          Int?
-  createdAt         DateTime @default(now())
+  like_id   Int      @id @default(autoincrement())
+  user_id   Int
+  song_id   String?
+  photo_id  Int?
+  createdAt DateTime @default(now())
 
-  user              User @relation(fields: [user_id], references: [id])
-  song              Song? @relation(fields: [song_id], references: [id])
-  photo              Photo? @relation(fields: [photo_id], references: [photo_id])
+  user  User   @relation(fields: [user_id], references: [id])
+  song  Song?  @relation(fields: [song_id], references: [id])
+  photo Photo? @relation(fields: [photo_id], references: [photo_id])
 }

@@ -1,52 +1,82 @@
-import { Body, Controller, Delete, Get, Param, ParseArrayPipe, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseArrayPipe,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { PhotoService } from './photo.service';
 import { CreatePhotoDto } from './dto/create-photo.dto';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { EditPhotoDto } from './dto';
+import { VisionService } from './vision.service';
 
 @UseGuards(JwtGuard)
 @Controller('photo')
 export class PhotoController {
-    constructor(private photoService: PhotoService){}
-    
-    @Post()
-    createPhoto(@GetUser('id') userId: number, @Body() dto: CreatePhotoDto){
-        return this.photoService.createPhoto(userId, dto)
-    }
+  constructor(
+    private photoService: PhotoService,
+    private visionService: VisionService,
+  ) {}
 
-    @Get()
-    getPhotos(@GetUser('id') userId: number,  @Query('page') page: number = 1, @Query('pageSize') pageSize: number = 10) {
-      return this.photoService.getPhoto(userId);
-    }
+  @Post()
+  createPhoto(@GetUser('id') userId: number, @Body() dto: CreatePhotoDto) {
+    return this.photoService.createPhoto(userId, dto);
+  }
+  @Get('analyze')
+  async analyzeImage(@Query('imageUrl') imageUrl: string) {
+    return this.visionService.analyzeImage(imageUrl);
+  }
+  @Get()
+  getPhotos(
+    @GetUser('id') userId: number,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+  ) {
+    return this.photoService.getPhoto(userId);
+  }
 
-    @Get(':photo_id')
-    getPhotoById(@GetUser('id') userId: number, @Param('photo_id', ParseIntPipe) photoId: number, @Query('page') page: number = 1, @Query('pageSize') pageSize: number = 10){
-      return this.photoService.getPhotokById(userId, photoId);
-    }
+  @Get(':photo_id')
+  getPhotoById(
+    @GetUser('id') userId: number,
+    @Param('photo_id', ParseIntPipe) photoId: number,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+  ) {
+    return this.photoService.getPhotokById(userId, photoId);
+  }
 
-    @Patch(':photo_id')
+  @Patch(':photo_id')
   editPhoto(
     @GetUser('id') userId: number,
     @Param('photo_id', ParseIntPipe) photoId: number,
-    @Body() dto: EditPhotoDto
+    @Body() dto: EditPhotoDto,
   ) {
     return this.photoService.editPhoto(userId, photoId, dto);
   }
 
-    @Delete(':photo_id')
-    deletePhoto(@GetUser('id') userId: number, @Param('photo_id', ParseIntPipe) photoId: number){
-      return this.photoService.deletePhoto(userId, photoId);
-    }
+  @Delete(':photo_id')
+  deletePhoto(
+    @GetUser('id') userId: number,
+    @Param('photo_id', ParseIntPipe) photoId: number,
+  ) {
+    return this.photoService.deletePhoto(userId, photoId);
+  }
 
-    @Post(':photo_id/like')
-    addLike(@GetUser('id') userId: number, @Param('photo_id', ParseIntPipe) photoId: number) {
-      return this.photoService.addLike(userId, photoId);
-}
+  @Post(':photo_id/like')
+  addLike(
+    @GetUser('id') userId: number,
+    @Param('photo_id', ParseIntPipe) photoId: number,
+  ) {
+    return this.photoService.addLike(userId, photoId);
+  }
 
-
-
-
-
-
+ 
 }
