@@ -10,6 +10,7 @@ import { EditPhotoDto } from './dto';
 import { VisionService } from './vision.service';
 import axios from 'axios';
 import imageSize from 'image-size';
+import { rgbToCIELAB } from './colorConversion';
 
 @Injectable()
 export class PhotoService {
@@ -96,14 +97,14 @@ export class PhotoService {
     });
 
     const analysisResults = await this.visionService.analyzeImage(dto.url);
-    for (const label of analysisResults.labels) {
+    for (const { description, score } of analysisResults.labels) {
       let labelImg = await this.prisma.label.findUnique({
-        where: { name: label },
+        where: { name: description },
       });
 
       if (!labelImg) {
         labelImg = await this.prisma.label.create({
-          data: { name: label },
+          data: { name: description },
         });
       }
       await this.prisma.feature.create({
@@ -113,12 +114,12 @@ export class PhotoService {
           red: 0,
           green: 0,
           blue: 0,
-          score: 0,
+          score: score,
           pixelFraction: 0,
         },
       });
     }
-    const colorsData = analysisResults.colors.map((color) => ({
+    const colorsImg = analysisResults.colors.map((color) => ({
       photo_id: newPhoto.photo_id,
       red: color.color.red,
       green: color.color.green,
@@ -127,9 +128,9 @@ export class PhotoService {
       pixelFraction: color.pixelFraction,
     }));
 
-    if (colorsData.length > 0) {
+    if (colorsImg.length > 0) {
       await this.prisma.feature.createMany({
-        data: colorsData,
+        data: colorsImg,
       });
     }
     return newPhoto;
@@ -260,5 +261,28 @@ export class PhotoService {
     const sizeImg = imageSize(response.data);
 
     return { width: sizeImg.width, height: sizeImg.height };
+  }
+
+  async getPhotoColorsInCIELAB(photoId: number) {
+    const features = await this.prisma.feature.findMany({
+      where: { photo_id: photoId },
+      select: {
+        red: true,
+        green: true,
+        blue: true,
+      },
+    });
+
+    const colorsInCIELAB = features
+      .filter(
+        (feature) =>
+          feature.red != null && feature.green != null && feature.blue != null,
+      )
+      .map(({ red, green, blue }) => {
+        console.log('!!!!!!!!!!Konwersja rgb!!!!!!!!!!!!!!:', red, green, blue);
+        return rgbToCIELAB(red, green, blue);
+      });
+
+    return colorsInCIELAB;
   }
 }

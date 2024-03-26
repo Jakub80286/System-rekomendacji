@@ -6,27 +6,37 @@ export class VisionService {
   private visionClient = new ImageAnnotatorClient();
 
   constructor() {}
-  async analyzeImage(imageUrl: string): Promise<any> { 
+  async analyzeImage(imageUrl: string): Promise<any> {
     const features = [
       { type: 'LABEL_DETECTION' },
-      { type: 'IMAGE_PROPERTIES' }, 
+      { type: 'IMAGE_PROPERTIES' },
     ];
-  
+
     const request = {
       image: { source: { imageUri: imageUrl } },
       features: features,
     };
-  
+
     const [result] = await this.visionClient.annotateImage(request);
-    
-    
-    const colors = result.imagePropertiesAnnotation?.dominantColors?.colors;
-  
-    
+
+    const labels =
+      result.labelAnnotations?.map((label) => ({
+        description: label.description,
+        score: label.score,
+      })) || [];
+
+    const colors =
+      result.imagePropertiesAnnotation?.dominantColors?.colors?.map(
+        (color) => ({
+          color: color.color,
+          score: color.score,
+          pixelFraction: color.pixelFraction,
+        }),
+      ) || [];
+
     return {
-      labels: result.labelAnnotations?.map(label => label.description) || [],
-      colors: colors, 
+      labels: labels,
+      colors: colors,
     };
   }
-  
 }

@@ -4,19 +4,21 @@ import {
   Delete,
   Get,
   Param,
-  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { PhotoService } from './photo.service';
+import { RecommendationPhotoService } from './recommendation.service';
 import { CreatePhotoDto } from './dto/create-photo.dto';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { EditPhotoDto } from './dto';
 import { VisionService } from './vision.service';
+import { RecommendationTagsService } from './tag-recommendation.service';
 
 @UseGuards(JwtGuard)
 @Controller('photo')
@@ -24,6 +26,8 @@ export class PhotoController {
   constructor(
     private photoService: PhotoService,
     private visionService: VisionService,
+    private recommendationPhotoService: RecommendationPhotoService,
+    private recommendation: RecommendationTagsService,
   ) {}
 
   @Post()
@@ -78,5 +82,20 @@ export class PhotoController {
     return this.photoService.addLike(userId, photoId);
   }
 
- 
+  @Get(':photo_id/colors-in-cielab')
+  async getColorsInCIELAB(@Param('photo_id', ParseIntPipe) photoId: number) {
+    const colorsInCIELAB =
+      await this.photoService.getPhotoColorsInCIELAB(photoId);
+    return { colorsInCIELAB };
+  }
+
+  @Get('recommendation/:user_id')
+  async getPhotoRecommendation(@GetUser('id') userId: number) {
+    return this.recommendationPhotoService.recommendBasedOnLabes(userId);
+  }
+
+  @Get('recommendations/:user_id')
+  async getPhotoRecommen(@GetUser('id') userId: number) {
+    return this.recommendation.recommendationBasedOnTags(userId);
+  }
 }
